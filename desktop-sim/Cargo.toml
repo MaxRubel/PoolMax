@@ -2,6 +2,7 @@
 name = "desktop-sim"
 version = "0.1.0"
 edition = "2021"
+default-run = "desktop-sim"
 
 [dependencies]
 app-core = { path = "../app-core" }

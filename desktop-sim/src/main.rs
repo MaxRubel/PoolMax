@@ -1,13 +1,12 @@
-use app_core::System;
+use app_core::{HasOS, System};
 use std::io::{self, Write};
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
-
 fn main() {
-    let mut system = System::new();
+    let mut system = System::new(HasOS);
     let mut stdout = io::stdout().into_raw_mode().unwrap();
 
     // Channel to send key presses from thread to main loop
@@ -24,9 +23,11 @@ fn main() {
     });
 
     writeln!(stdout, "Controls:\r").unwrap();
-    writeln!(stdout, "  f - Toggle Filter\r").unwrap();
-    writeln!(stdout, "  h - Toggle Heater\r").unwrap();
-    writeln!(stdout, "  j - Toggle Jets\r").unwrap();
+    writeln!(stdout, "  f - Filter On\r").unwrap();
+    writeln!(stdout, "  g - Filter Off\r").unwrap();
+    writeln!(stdout, "  h - Heater On\r").unwrap();
+    writeln!(stdout, "  j - Heater Off\r").unwrap();
+    writeln!(stdout, "  s - Spa Mode\r").unwrap();
     writeln!(stdout, "  m - Switch System Mode (Pool/Spa)\r").unwrap();
     writeln!(stdout, "  v - Pool: Vacuum mode\r").unwrap();
     writeln!(stdout, "  s - Pool: Skimmer mode\r").unwrap();
@@ -42,43 +43,19 @@ fn main() {
 
             match key {
                 Key::Char('f') | Key::Char('F') => {
-                    if system.filter_on {
-                        system.stop_filter();
-                        writeln!(stdout, "Filter OFF\r").unwrap();
-                    } else {
-                        system.run_filter();
-                        writeln!(stdout, "Filter ON\r").unwrap();
-                    }
+                    system.start_filter();
+                }
+                Key::Char('g') | Key::Char('G') => {
+                    system.stop_filter();
                 }
                 Key::Char('h') | Key::Char('H') => {
-                    if system.heater_on {
-                        system.cancel_heater();
-                        writeln!(stdout, "Heater OFF\r").unwrap();
-                    } else {
-                        system.run_heater();
-                        writeln!(stdout, "Heater ON\r").unwrap();
-                    }
+                    system.start_heater();
                 }
                 Key::Char('j') | Key::Char('J') => {
-                    if system.jets_on {
-                        system.stop_jets();
-                        writeln!(stdout, "Jets OFF\r").unwrap();
-                    } else {
-                        system.run_jets();
-                        writeln!(stdout, "Jets ON\r").unwrap();
-                    }
-                }
-                Key::Char('v') | Key::Char('V') => {
-                    system.change_pool_mode(app_core::PoolMode::Vacuum);
-                    writeln!(stdout, "Pool Mode: Vacuum\r").unwrap();
+                    system.stop_heater();
                 }
                 Key::Char('s') | Key::Char('S') => {
-                    system.change_pool_mode(app_core::PoolMode::Skimmer);
-                    writeln!(stdout, "Pool Mode: Skimmer\r").unwrap();
-                }
-                Key::Char('b') | Key::Char('B') => {
-                    system.change_pool_mode(app_core::PoolMode::Blend);
-                    writeln!(stdout, "Pool Mode: Blend\r").unwrap();
+                    system.enter_spa_mode();
                 }
                 Key::Char('q') | Key::Char('Q') => {
                     writeln!(stdout, "Quitting...\r").unwrap();
