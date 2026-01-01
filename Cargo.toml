@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "app-core",
+    "desktop-sim",
+    "esp32-fw",
+]
+
+resolver = "2"
