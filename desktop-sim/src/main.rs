@@ -1,13 +1,12 @@
-use app_core::System;
+use app_core::{HasOS, System};
 use std::io::{self, Write};
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
-
 fn main() {
-    let mut system = System::new();
+    let mut system = System::new(HasOS);
     let mut stdout = io::stdout().into_raw_mode().unwrap();
 
     // Channel to send key presses from thread to main loop
@@ -46,16 +45,16 @@ fn main() {
                         system.stop_filter();
                         writeln!(stdout, "Filter OFF\r").unwrap();
                     } else {
-                        system.run_filter();
+                        system.start_filter();
                         writeln!(stdout, "Filter ON\r").unwrap();
                     }
                 }
                 Key::Char('h') | Key::Char('H') => {
                     if system.heater_on {
-                        system.cancel_heater();
+                        system.stop_heater();
                         writeln!(stdout, "Heater OFF\r").unwrap();
                     } else {
-                        system.run_heater();
+                        system.start_heater();
                         writeln!(stdout, "Heater ON\r").unwrap();
                     }
                 }
@@ -64,22 +63,22 @@ fn main() {
                         system.stop_jets();
                         writeln!(stdout, "Jets OFF\r").unwrap();
                     } else {
-                        system.run_jets();
+                        system.start_jets();
                         writeln!(stdout, "Jets ON\r").unwrap();
                     }
                 }
-                Key::Char('v') | Key::Char('V') => {
-                    system.change_pool_mode(app_core::PoolMode::Vacuum);
-                    writeln!(stdout, "Pool Mode: Vacuum\r").unwrap();
-                }
-                Key::Char('s') | Key::Char('S') => {
-                    system.change_pool_mode(app_core::PoolMode::Skimmer);
-                    writeln!(stdout, "Pool Mode: Skimmer\r").unwrap();
-                }
-                Key::Char('b') | Key::Char('B') => {
-                    system.change_pool_mode(app_core::PoolMode::Blend);
-                    writeln!(stdout, "Pool Mode: Blend\r").unwrap();
-                }
+                // Key::Char('v') | Key::Char('V') => {
+                //     system.change_pool_mode(app_core::PoolMode::Vacuum);
+                //     writeln!(stdout, "Pool Mode: Vacuum\r").unwrap();
+                // }
+                // Key::Char('s') | Key::Char('S') => {
+                //     system.change_pool_mode(app_core::PoolMode::Skimmer);
+                //     writeln!(stdout, "Pool Mode: Skimmer\r").unwrap();
+                // }
+                // Key::Char('b') | Key::Char('B') => {
+                //     system.change_pool_mode(app_core::PoolMode::Blend);
+                //     writeln!(stdout, "Pool Mode: Blend\r").unwrap();
+                // }
                 Key::Char('q') | Key::Char('Q') => {
                     writeln!(stdout, "Quitting...\r").unwrap();
                     break;
