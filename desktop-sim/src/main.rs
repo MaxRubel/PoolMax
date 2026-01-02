@@ -53,9 +53,6 @@ fn main() {
                     system.toggle_heater_on();
                 }
                 Key::Char('j') | Key::Char('J') => {
-                    system.set_heater_on(false);
-                }
-                Key::Char('n') | Key::Char('M') => {
                     system.toggle_jets();
                 }
                 Key::Char('s') | Key::Char('S') => {

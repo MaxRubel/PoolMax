@@ -318,7 +318,7 @@ impl<P: Platform> System<P> {
         if b {
             println!("Turning heater on");
         } else {
-            println!("Turning heater off")
+            println!("Turning heater off");
         }
 
         true
@@ -334,6 +334,7 @@ impl<P: Platform> System<P> {
         if self.heater.mode == m {
             return false;
         }
+
         println!("Toggling heat mode to {}", m);
         self.heater.mode = m;
         self.platform.heater_mode_light_toggle(m);
