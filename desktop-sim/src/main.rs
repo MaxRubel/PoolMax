@@ -55,7 +55,7 @@ fn main() {
                     system.stop_heater();
                 }
                 Key::Char('s') | Key::Char('S') => {
-                    system.enter_spa_mode();
+                    system.auto_spa();
                 }
                 Key::Char('q') | Key::Char('Q') => {
                     writeln!(stdout, "Quitting...\r").unwrap();
