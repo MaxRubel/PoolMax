@@ -7,6 +7,7 @@ use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 fn main() {
     let mut system = System::new(HasOS);
+    system.internal_test = true;
     let mut stdout = io::stdout().into_raw_mode().unwrap();
 
     // Channel to send key presses from thread to main loop
@@ -23,8 +24,8 @@ fn main() {
     });
 
     writeln!(stdout, "Controls:\r").unwrap();
-    writeln!(stdout, "  f - Filter On\r").unwrap();
-    writeln!(stdout, "  g - Filter Off\r").unwrap();
+    writeln!(stdout, "  c - Toggle Quick Clean\r").unwrap();
+    writeln!(stdout, "  r - Toggle Filter Schedule\r").unwrap();
     writeln!(stdout, "  h - Heater On\r").unwrap();
     writeln!(stdout, "  j - Heater Off\r").unwrap();
     writeln!(stdout, "  s - Spa Mode\r").unwrap();
@@ -42,21 +43,25 @@ fn main() {
             use termion::event::Key;
 
             match key {
-                Key::Char('f') | Key::Char('F') => {
-                    system.start_filter();
+                Key::Char('c') | Key::Char('C') => {
+                    system.toggle_quick_clean();
                 }
-                Key::Char('g') | Key::Char('G') => {
-                    system.stop_filter();
+                Key::Char('r') | Key::Char('R') => {
+                    system.toggle_filter_schedule();
                 }
                 Key::Char('h') | Key::Char('H') => {
-                    system.start_heater();
+                    system.toggle_heater_on();
                 }
                 Key::Char('j') | Key::Char('J') => {
-                    system.stop_heater();
+                    system.set_heater_on(false);
+                }
+                Key::Char('n') | Key::Char('M') => {
+                    system.toggle_jets();
                 }
                 Key::Char('s') | Key::Char('S') => {
                     system.auto_spa();
                 }
+
                 Key::Char('q') | Key::Char('Q') => {
                     writeln!(stdout, "Quitting...\r").unwrap();
                     break;
