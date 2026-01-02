@@ -22,9 +22,6 @@ impl fmt::Display for PoolValve {
     }
 }
 
-pub struct HasOS;
-pub struct NoOS;
-
 //platform specific behavior:
 pub trait Platform {
     fn delay_secs(&self, secs: u64);
@@ -38,7 +35,7 @@ pub trait Platform {
     fn mech_quick_clean_toggle(&self, b: bool);
     fn mech_progress_light_toggle(&self, b: bool);
 }
-
+pub struct HasOS;
 impl Platform for HasOS {
     fn delay_secs(&self, secs: u64) {
         thread::sleep(Duration::from_secs(secs));
@@ -56,6 +53,19 @@ impl Platform for HasOS {
     fn mech_progress_light_toggle(&self, _: bool) {}
 }
 
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum PoolOrSpa {
+    Pool,
+    Spa,
+}
+#[derive(Copy, Clone, PartialEq)]
+pub enum PoolValve {
+    Vacuum,
+    Skimmer,
+    Blend,
+}
+
+// Main system state
 pub struct System<P: Platform> {
     pub main_valve_orientation: PoolOrSpa,
     pub pool_valve_orientation: PoolValve,
@@ -87,18 +97,6 @@ impl Default for System<HasOS> {
             internal_test: true,
         }
     }
-}
-
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub enum PoolOrSpa {
-    Pool,
-    Spa,
-}
-#[derive(Copy, Clone, PartialEq)]
-pub enum PoolValve {
-    Vacuum,
-    Skimmer,
-    Blend,
 }
 
 impl<P: Platform> System<P> {
