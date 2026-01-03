@@ -258,6 +258,7 @@ impl<M: Mech, L: Lights> System<M, L> {
     }
 
     log_msg!(self.message_queue, "Delay of 3 hours");
+    self.filter.quick_clean = false;
 
     if !ignore.unwrap_or(false) {
       self.restore_previous_state(prev_state);
@@ -278,10 +279,6 @@ impl<M: Mech, L: Lights> System<M, L> {
         self.set_main_valves(orientation);
       }
 
-      if n.filter.quick_clean {
-        self.start_quick_clean();
-      }
-
       self.set_heat_mode(n.heater.mode);
       self.set_heater_on(n.heater.on);
     }
@@ -297,6 +294,30 @@ impl<M: Mech, L: Lights> System<M, L> {
 
   pub fn pop_message(&mut self) -> Option<String> {
     self.message_queue.pop().map(|m| m.get_str().to_string())
+  }
+
+  pub fn display_status(&mut self) {
+    log_msg!(
+      self.message_queue,
+      "Filter: schedule: {}",
+      self.filter.running_schedule
+    );
+
+    log_msg!(
+      self.message_queue,
+      "Filter: quick clean: {}",
+      self.filter.quick_clean
+    );
+
+    log_msg!(
+      self.message_queue,
+      "Main Valve Position: {}",
+      self.main_valve_orientation
+    );
+
+    log_msg!(self.message_queue, "Heater on: {}", self.heater.on);
+    log_msg!(self.message_queue, "Heater Mode: {}", self.heater.mode);
+    log_msg!(self.message_queue, "Jets on: {}", self.jets_on);
   }
 
   // Lights

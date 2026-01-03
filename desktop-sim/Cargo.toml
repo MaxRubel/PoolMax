@@ -7,6 +7,3 @@ default-run = "desktop-sim"
 [dependencies]
 app-core = { path = "../app-core" }
 termion = "2.0"
-
-[lib]
-test = false

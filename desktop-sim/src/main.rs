@@ -11,6 +11,7 @@ fn main() {
   let mut system = System::new(HasOSMech, HasOSLights);
   system.internal_test = true;
   let mut stdout = io::stdout().into_raw_mode().unwrap();
+
   eprintln!("System created, internal_test = {}", system.internal_test);
 
   // Channel to send key presses from thread to main loop
@@ -26,28 +27,32 @@ fn main() {
     }
   });
 
-  // Display controls
-  write!(stdout, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
-  writeln!(stdout, "=== Pool Control System ===\r").unwrap();
-  writeln!(stdout, "Controls:\r").unwrap();
-  writeln!(stdout, "  c - Toggle Quick Clean\r").unwrap();
-  writeln!(stdout, "  r - Toggle Filter Schedule\r").unwrap();
-  writeln!(stdout, "  h - Heater On\r").unwrap();
-  writeln!(stdout, "  j - Toggle Jets\r").unwrap();
-  writeln!(stdout, "  s - Spa Mode\r").unwrap();
-  writeln!(stdout, "  m - Switch Main Valve Orientation (Pool/Spa)\r").unwrap();
-  writeln!(stdout, "  k - Switch Heater Mode\r").unwrap();
-  writeln!(stdout, "  q - Quit\r").unwrap();
-  writeln!(stdout, "\r").unwrap();
-  writeln!(stdout, "=== Messages ===\r").unwrap();
-  stdout.flush().unwrap();
+  // Define as a function that takes stdout as a parameter
+  let clear_all = |stdout: &mut dyn Write| {
+    write!(stdout, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
+    writeln!(stdout, "=== PoolMax System ===\r").unwrap();
+    writeln!(stdout, "Controls:\r").unwrap();
+    writeln!(stdout, "  c - Toggle Quick Clean\r").unwrap();
+    writeln!(stdout, "  r - Toggle Filter Schedule\r").unwrap();
+    writeln!(stdout, "  h - Heater On\r").unwrap();
+    writeln!(stdout, "  j - Toggle Jets\r").unwrap();
+    writeln!(stdout, "  s - Spa Mode\r").unwrap();
+    writeln!(stdout, "  m - Switch Main Valve Orientation (Pool/Spa)\r").unwrap();
+    writeln!(stdout, "  k - Switch Heater Mode\r").unwrap();
+    writeln!(stdout, "  l - Clear Screen\r").unwrap();
+    writeln!(stdout, "  q - Quit\r").unwrap();
+    writeln!(stdout, "\r").unwrap();
+    writeln!(stdout, "=== Messages ===\r").unwrap();
+    stdout.flush().unwrap();
+  };
 
-  let message_start_line = 12;
+  clear_all(&mut stdout);
+
+  let message_start_line = 13;
   let mut message_lines: Vec<String> = Vec::new();
   let max_messages = 48;
 
   loop {
-    // Check for key presses
     if let Ok(key) = rx.try_recv() {
       use termion::event::Key;
 
@@ -70,8 +75,15 @@ fn main() {
         Key::Char('s') | Key::Char('S') => {
           system.auto_spa(None);
         }
+        Key::Char('p') | Key::Char('P') => {
+          system.display_status();
+        }
         Key::Char('m') | Key::Char('M') => {
           system.toggle_main_valves();
+        }
+        Key::Char('l') | Key::Char('L') => {
+          message_lines.clear();
+          clear_all(&mut stdout);
         }
         Key::Char('q') | Key::Char('Q') => {
           write!(stdout, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
@@ -95,9 +107,7 @@ fn main() {
 
     if has_new_messages {
       // Redraw message area
-      message_lines.push("\r".to_string());
       message_lines.push("--------------------------------------".to_string());
-      message_lines.push("\r".to_string());
 
       for (i, line) in message_lines.iter().enumerate() {
         write!(
@@ -114,11 +124,9 @@ fn main() {
 
     stdout.flush().unwrap();
 
-    // Main loop tick
     thread::sleep(Duration::from_millis(50));
   }
 }
-
 // // For embedded/microcontroller implementation with LED screen
 // #[cfg(not(target_os = "linux"))]
 // fn display_on_led(system: &mut System<impl Mech, impl Lights>) {
