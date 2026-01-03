@@ -12,3 +12,8 @@ esp-backtrace = "0.13"   # compatible published version
 
 [package.metadata.espflash]
 partition_table = "partition-table.csv"
+
+[lib]
+test = false
+doctest = false
+bench = false
