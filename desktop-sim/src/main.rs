@@ -1,11 +1,4 @@
 use app_core::structs::{HasOSLights, HasOSMech, System};
-use http_body_util::{BodyExt, Full};
-use hyper::body::Bytes;
-use hyper::server::conn::http1;
-use hyper::service::service_fn;
-use hyper::{Request, Response, StatusCode};
-use hyper_util::rt::TokioIo;
-use std::convert::Infallible;
 use std::io::{self, Write};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
@@ -13,119 +6,12 @@ use std::time::Duration;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use termion::{clear, cursor};
-use tokio::net::TcpListener;
-use tokio::runtime::Runtime;
-
-async fn handle_request(
-  req: Request<hyper::body::Incoming>,
-  system: Arc<Mutex<System<HasOSMech, HasOSLights>>>,
-  html: Arc<String>,
-) -> Result<Response<Full<Bytes>>, Infallible> {
-  let path = req.uri().path();
-  let method = req.method();
-
-  match (method.as_str(), path) {
-    ("GET", "/") => {
-      let mut res = Response::new(Full::new(Bytes::from(html.as_ref().clone())));
-      res.headers_mut().insert(
-        hyper::header::CONTENT_TYPE,
-        "text/html; charset=utf-8".parse().unwrap(),
-      );
-      Ok(res)
-    }
-    ("GET", "/lights-status") => {
-      let mut sys = system.lock().unwrap();
-
-      let lights = sys.get_light_status();
-      let mut bits: u16 = 0;
-      for (i, &light_on) in lights.iter().enumerate() {
-        if light_on {
-          bits |= 1 << i;
-        }
-      }
-
-      let bytes = bits.to_be_bytes();
-
-      Ok(Response::new(Full::new(Bytes::from(bytes.to_vec()))))
-    }
-    ("GET", "/status") => {
-      let sys = system.lock().unwrap();
-      let status = format!("System status: internal_test={}", sys.internal_test);
-      Ok(Response::new(Full::new(Bytes::from(status))))
-    }
-    ("POST", "/toggle-button") => {
-      let body = req.into_body(); // Extract body from request
-      let body_bytes = body.collect().await.unwrap().to_bytes();
-      let body_str = std::str::from_utf8(&body_bytes).unwrap();
-      let value: i32 = body_str.trim().parse().unwrap();
-      let mut sys = system.lock().unwrap();
-
-      match value {
-        0 => {
-          sys.auto_spa(None);
-        }
-        1 => {
-          sys.toggle_jets();
-        }
-        2 => {
-          sys.toggle_filter_schedule();
-        }
-        3 => {
-          sys.toggle_quick_clean();
-        }
-        4 => {
-          sys.toggle_main_valves();
-        }
-        6 => {
-          sys.toggle_heater_on();
-        }
-        7 => {
-          sys.toggle_heat_mode();
-        }
-        _ => println!("error"),
-      }
-
-      Ok(Response::new(Full::new(Bytes::from("Quick clean toggled"))))
-    }
-    _ => {
-      let mut response = Response::new(Full::new(Bytes::from("Not Found")));
-      *response.status_mut() = StatusCode::NOT_FOUND;
-      Ok(response)
-    }
-  }
-}
-
-async fn run_server(
-  system: Arc<Mutex<System<HasOSMech, HasOSLights>>>,
-  html: Arc<String>,
-) -> Result<(), Box<dyn std::error::Error>> {
-  let addr = "127.0.0.1:3000";
-  let listener = TcpListener::bind(addr).await?;
-
-  eprintln!("Server running on http://{}", addr);
-
-  loop {
-    let (stream, _) = listener.accept().await?;
-    let io = TokioIo::new(stream);
-    let system = system.clone();
-    let html = html.clone();
-
-    tokio::task::spawn(async move {
-      if let Err(err) = http1::Builder::new()
-        .serve_connection(
-          io,
-          service_fn(move |req| handle_request(req, system.clone(), html.clone())),
-        )
-        .await
-      {
-        eprintln!("Error serving connection: {:?}", err);
-      }
-    });
-  }
-}
+use tiny_http::{Header, Method, Response, Server};
 
 fn main() {
   let system = Arc::new(Mutex::new(System::new(HasOSMech, HasOSLights)));
+  let server = Server::http("127.0.0.1:3000").unwrap();
+
   {
     let mut sys = system.lock().unwrap();
     sys.internal_test = true;
@@ -133,19 +19,74 @@ fn main() {
   }
 
   let mut stdout = io::stdout().into_raw_mode().unwrap();
-
-  let html = Arc::new(std::fs::read_to_string("index.html").expect("Failed to read index.html"));
-
-  let system_server = system.clone();
-  let html_server = html.clone();
+  let html = std::fs::read_to_string("index.html").unwrap();
+  let system_clone = system.clone();
 
   thread::spawn(move || {
-    let rt = Runtime::new().unwrap();
-    rt.block_on(async {
-      if let Err(e) = run_server(system_server, html_server).await {
-        eprintln!("Server error: {}", e);
+    eprint!("Server running on http://127.0.0.1:3000");
+    for mut request in server.incoming_requests() {
+      let path = request.url();
+      let method = request.method();
+
+      match (method, path) {
+        (Method::Get, "/") => {
+          let response = Response::from_string(&html).with_header(
+            Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..]).unwrap(),
+          );
+          request.respond(response).ok();
+        }
+        (Method::Get, "/lights-status") => {
+          let mut sys = system_clone.lock().unwrap();
+          let lights = sys.get_light_status();
+          let mut bits: u16 = 0;
+          for (i, &light_on) in lights.iter().enumerate() {
+            if light_on {
+              bits |= 1 << i;
+            }
+          }
+          request
+            .respond(Response::from_data(bits.to_be_bytes()))
+            .ok();
+        }
+        (Method::Post, "/toggle-button") => {
+          let mut content = String::new();
+          request.as_reader().read_to_string(&mut content).ok();
+          let value: i32 = content.trim().parse().unwrap_or(-1);
+
+          let mut sys = system_clone.lock().unwrap();
+          match value {
+            0 => {
+              sys.auto_spa(None);
+            }
+            1 => {
+              sys.toggle_jets();
+            }
+            2 => {
+              sys.toggle_filter_schedule();
+            }
+            3 => {
+              sys.toggle_quick_clean();
+            }
+            4 => {
+              sys.toggle_main_valves();
+            }
+            6 => {
+              sys.toggle_heater_on();
+            }
+            7 => {
+              sys.toggle_heat_mode();
+            }
+            _ => {}
+          }
+          request.respond(Response::from_string("OK")).ok();
+        }
+        _ => {
+          request
+            .respond(Response::from_string("Not Found").with_status_code(404))
+            .ok();
+        }
       }
-    });
+    }
   });
 
   // Channel to send key presses from thread to main loop
