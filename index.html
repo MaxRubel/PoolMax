@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PoolMax</title>
+    <style>
+      body {
+        background-color: rgb(0, 16, 79);
+        color: white;
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+          "Lucida Sans", Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      main {
+        width: 100vw;
+        gap: 1em;
+      }
+
+      .center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .right {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .container {
+        min-height: 48px;
+        background-color: rgba(255, 255, 255, 0.053);
+        width: 75vw;
+        border-radius: 10px;
+      }
+
+      .sub {
+        display: flex;
+        align-items: left;
+        padding: 1em 4em;
+        width: 100%;
+        gap: 1em;
+        flex-direction: column;
+      }
+
+      button {
+        border-radius: 10px;
+        min-height: 44px;
+        border: none;
+        background-color: rgb(45, 74, 237);
+        color: white;
+        padding: 1em;
+        cursor: pointer;
+        width: 7em;
+        box-sizing: border-box;
+      }
+      button:hover {
+        background-color: rgb(56, 78, 204);
+      }
+      button:active {
+        background-color: rgb(45, 74, 237);
+        outline: 1px solid rgb(79, 79, 79);
+        outline-offset: 0;
+      }
+
+      .large {
+        font-size: large;
+      }
+
+      .small {
+        font-size: small;
+      }
+
+      .separate {
+        background-color: rgb(56, 78, 204);
+        border-radius: 10px;
+        width: 100%;
+        height: 2px;
+      }
+
+      .row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .tiny-row {
+        display: flex;
+        gap: 4em;
+      }
+
+      .green-light {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #2f4f2f, #0d1a0d);
+        box-shadow: 0 0 2px #2f4f2f inset, 0 0 2px #0d1a0d;
+      }
+
+      .green-light.on {
+        background: radial-gradient(circle at 30% 30%, #adff2f, #228b22);
+        box-shadow: 0 0 5px #adff2f, inset 0 0 2px #7cfc00;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="center" id="main">
+      <div class="container center"><h1>Pool Max</h1></div>
+      <div class="container center">
+        <div class="sub">
+          <!-- Auto Spa -->
+          <div class="row">
+            <div><button id="button-0">Auto Spa</button></div>
+            <div class="small">
+              <div style="transform: translateY(5px)">
+                <div class="green-light" id="light-0"></div>
+                <div>on</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Jets -->
+          <div class="row">
+            <button id="button-1">⏻ Jets</button>
+            <div class="small">
+              <div style="transform: translateY(5px)">
+                <div class="green-light" id="light-1"></div>
+                <div>on</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="separate"></div>
+
+          <!-- Run Schedule -->
+          <div class="large right">Filter</div>
+          <div class="row">
+            <button id="button-2">Run Schedule</button>
+            <div class="small">
+              <div style="transform: translateY(5px)">
+                <div class="green-light" id="light-2"></div>
+                <div>on</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clean -->
+          <div class="row">
+            <button id="button-3">⏻ Clean (3hrs)</button>
+            <div class="small">
+              <div style="transform: translateY(5px)">
+                <div class="green-light" id="light-3"></div>
+                <div>on</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="separate"></div>
+          <div class="large right">Valves</div>
+
+          <!-- Main Valve Position -->
+          <div class="row">
+            <button id="button-4">Main</button>
+            <div class="small">
+              <div class="tiny-row" style="transform: translate(6px, 5px)">
+                <div class="center">
+                  <div class="green-light" id="light-4"></div>
+                  <div>Spa</div>
+                </div>
+
+                <div class="center">
+                  <div class="green-light" id="light-5"></div>
+                  <div>Pool</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skimmer -->
+          <!-- <div class="row">
+            <button id="button-5">Skimmer</button>
+            <div class="small">
+              <div
+                class="tiny-row"
+                style="transform: translate(18px, 5px); gap: 3em"
+              >
+                <div class="center">
+                  <div class="green-light" id="light-6"></div>
+                  <div>Blend</div>
+                </div>
+
+                <div class="center">
+                  <div class="green-light" id="light-7"></div>
+                  <div>Skim</div>
+                </div>
+
+                <div class="center">
+                  <div class="green-light" id="light-8"></div>
+                  <div>Vacuum</div>
+                </div>
+              </div>
+            </div>
+          </div> -->
+
+          <div class="separate"></div>
+          <div class="large right">Heater</div>
+
+          <!-- Heater Power -->
+          <div class="row">
+            <button id="button-6">⏻ Heater</button>
+            <div class="small">
+              <div style="transform: translateY(5px)">
+                <div class="green-light" id="light-9"></div>
+                <div>on</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Heater Mode -->
+          <div class="row">
+            <button id="button-7">Heat Mode</button>
+            <div class="small">
+              <div class="tiny-row" style="transform: translate(6px, 5px)">
+                <div class="center">
+                  <div class="green-light" id="light-10"></div>
+                  <div>Spa</div>
+                </div>
+
+                <div class="center">
+                  <div class="green-light" id="light-11"></div>
+                  <div>Pool</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script>
+      const resp1 = [
+        0, // 0 spa
+        0, // 1 jets
+        1, // 2 run schedule
+        0, // 3 clean
+        0, // 4 main valve spa
+        1, // 5 main valve pool
+        0, // 6 blend valve
+        1, // 7 skim valve
+        0, // 8 pool valve
+        0, // 9 heater
+        0, // 10 heat mode spa
+        1, // 11 heat mode pool
+      ];
+
+      const buttons = [
+        // 0 Auto Spa,
+        // 1 Toggle Jets
+        // 2 Toggle Filter Schedule
+        // 3 Toggle Quick Clean
+        // 4 Main Valve Toggle
+        // 5
+        // 6 Heater Power
+        // 7 Heat Mode
+      ];
+
+      async function sendToggle(num) {
+        const resp = await fetch("/toggle-button", {
+          method: "POST",
+          body: num.toString(),
+        });
+      }
+
+      async function updateLights() {
+        const resp = await fetch("/lights-status", {
+          method: "GET",
+        });
+        const buff = await resp.arrayBuffer();
+        const view = new DataView(buff);
+        const bits = view.getUint16(0, false);
+        const data = Array.from(
+          { length: 12 },
+          (_, i) => (bits & (1 << i)) !== 0
+        );
+
+        for (let i = 0; i <= 11; i++) {
+          // const resp = updated ? resp1 : resp2;
+          if ([6, 7, 8].includes(i)) {
+            continue;
+          }
+          const light = document.getElementById(`light-${String(i)}`);
+          light.classList.toggle("on", data[i]);
+        }
+      }
+
+      setInterval(async () => {
+        await updateLights();
+      }, 1000);
+
+      document.getElementById("main").addEventListener("click", async (e) => {
+        if (e.target.id.includes("button")) {
+          const num = Number(e.target.id.split("-")[1]);
+
+          await sendToggle(num);
+        }
+      });
+    </script>
+  </body>
+</html>

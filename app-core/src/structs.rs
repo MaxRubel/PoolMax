@@ -165,6 +165,7 @@ impl Default for System<HasOSMech, HasOSLights> {
       internal_test: true,
       prev_state: None,
       message_queue: MessageQueue::new(),
+      auto_spa_mode: false,
     }
   }
 }
@@ -182,4 +183,5 @@ pub struct System<M: Mech, L: Lights> {
   pub internal_test: bool,
   pub prev_state: Option<PrevState>,
   pub message_queue: MessageQueue<48>,
+  pub auto_spa_mode: bool,
 }

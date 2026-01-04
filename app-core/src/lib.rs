@@ -27,6 +27,7 @@ impl<M: Mech, L: Lights> System<M, L> {
       internal_test: false,
       prev_state: None,
       message_queue: MessageQueue::new(),
+      auto_spa_mode: false,
     }
   }
 
@@ -253,8 +254,10 @@ impl<M: Mech, L: Lights> System<M, L> {
     let op1 = self.set_heat_mode(PoolOrSpa::Spa);
     let op3 = self.start_quick_clean();
 
+    self.auto_spa_mode = true;
+
     if !self.internal_test {
-      self.mech.delay_secs(15);
+      self.mech.delay_secs(10);
     }
 
     log_msg!(self.message_queue, "Delay of 3 hours");
@@ -263,6 +266,8 @@ impl<M: Mech, L: Lights> System<M, L> {
     if !ignore.unwrap_or(false) {
       self.restore_previous_state(prev_state);
     }
+
+    self.auto_spa_mode = false;
 
     log_msg!(self.message_queue, "Complete: Spa Mode");
     return (op1, op2, op3);
@@ -330,6 +335,21 @@ impl<M: Mech, L: Lights> System<M, L> {
     f(self);
     self.lights.in_progress(false);
     self.in_progress = false;
+  }
+
+  pub fn get_light_status(&mut self) -> [bool; 12] {
+    let mut arr: [bool; 12] = [false; 12];
+    arr[0] = self.auto_spa_mode;
+    arr[1] = self.jets_on;
+    arr[2] = self.filter.running_schedule;
+    arr[3] = self.filter.quick_clean;
+    arr[4] = self.main_valve_orientation == PoolOrSpa::Spa;
+    arr[5] = self.main_valve_orientation == PoolOrSpa::Pool;
+    arr[9] = self.heater.on;
+    arr[10] = self.heater.mode == PoolOrSpa::Spa;
+    arr[11] = self.heater.mode == PoolOrSpa::Pool;
+
+    arr
   }
 }
 
