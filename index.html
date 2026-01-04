@@ -273,6 +273,7 @@
       ];
 
       async function sendToggle(num) {
+        main.style.pointerEvents = "none";
         const resp = await fetch("/toggle-button", {
           method: "POST",
           body: num.toString(),
@@ -299,6 +300,8 @@
           const light = document.getElementById(`light-${String(i)}`);
           light.classList.toggle("on", data[i]);
         }
+
+        main.style.pointerEvents = "auto";
       }
 
       setInterval(async () => {
