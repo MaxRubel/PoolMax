@@ -59,7 +59,6 @@ async fn handle_request(
       let body_str = std::str::from_utf8(&body_bytes).unwrap();
       let value: i32 = body_str.trim().parse().unwrap();
       let mut sys = system.lock().unwrap();
-      println!("received {}", value);
 
       match value {
         0 => {
@@ -86,7 +85,6 @@ async fn handle_request(
         _ => println!("error"),
       }
 
-      println!("Received value: {}", value);
       Ok(Response::new(Full::new(Bytes::from("Quick clean toggled"))))
     }
     _ => {
@@ -136,10 +134,8 @@ fn main() {
 
   let mut stdout = io::stdout().into_raw_mode().unwrap();
 
-  // Load HTML file once at startup
   let html = Arc::new(std::fs::read_to_string("index.html").expect("Failed to read index.html"));
 
-  // Start HTTP server in background thread
   let system_server = system.clone();
   let html_server = html.clone();
 
@@ -165,7 +161,6 @@ fn main() {
     }
   });
 
-  // Define as a function that takes stdout as a parameter
   let clear_all = |stdout: &mut dyn Write| {
     write!(stdout, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
     writeln!(stdout, "=== PoolMax System ===\r").unwrap();
